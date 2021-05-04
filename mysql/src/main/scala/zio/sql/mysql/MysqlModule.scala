@@ -278,6 +278,14 @@ trait MysqlModule extends Jdbc { self =>
         render(",")
         renderExpr(param7)
         render(")")
+      case Expr.FunctionCallN(params, function) =>
+        render(function.name.name)
+        render("(")
+        for { (p, i) <- params.zipWithIndex } {
+          if (i > 0) render(",")
+          renderExpr(p)
+        }
+        render(")")
     }
 
     private def renderLit[A, B](lit: self.Expr.Literal[_])(implicit render: Renderer): Unit = {

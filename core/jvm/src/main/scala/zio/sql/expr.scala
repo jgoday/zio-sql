@@ -252,6 +252,11 @@ trait ExprModule extends NewtypesModule with FeaturesModule with OpsModule {
         ] {
       def typeTag: TypeTag[Z] = implicitly[TypeTag[Z]]
     }
+
+    sealed case class FunctionCallN[Z: TypeTag](param: Seq[Expr[_, _, _]], function: FunctionDefN[Z])
+        extends InvariantExpr[Any, Any, Z] {
+      def typeTag: TypeTag[Z] = implicitly[TypeTag[Z]]
+    }
   }
 
   sealed case class AggregationDef[-A, +B](name: FunctionName) { self =>
@@ -375,8 +380,12 @@ trait ExprModule extends NewtypesModule with FeaturesModule with OpsModule {
     }
   }
 
-  object FunctionDef {
+  sealed case class FunctionDefN[+B](name: FunctionName) { self =>
+    def apply[B1 >: B](param1: Expr[_, _, _]*)(implicit typeTag: TypeTag[B1]): Expr[Any, Any, B1] =
+      Expr.FunctionCallN(param1, self: FunctionDefN[B1])
+  }
 
+  object FunctionDef {
     //math functions
     val Abs         = FunctionDef[Double, Double](FunctionName("abs"))
     val Acos        = FunctionDef[Double, Double](FunctionName("acos"))
@@ -418,6 +427,8 @@ trait ExprModule extends NewtypesModule with FeaturesModule with OpsModule {
 
     // date functions
     val CurrentTimestamp = FunctionDef[Nothing, Instant](FunctionName("current_timestamp"))
+
+    def variadicFunc[R](name: String) = FunctionDefN[R](FunctionName(name))
   }
 
   sealed trait Set[F, -A] {

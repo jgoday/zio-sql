@@ -121,6 +121,14 @@ trait SqlServerModule extends Jdbc { self =>
         builder.append(",")
         buildExpr(param7)
         val _ = builder.append(")")
+      case Expr.FunctionCallN(params, function) =>
+        builder.append(function.name.name)
+        builder.append("(")
+        for { (p, i) <- params.zipWithIndex } {
+          if (i > 0) builder.append(",")
+          buildExpr(p)
+        }
+        val _ = builder.append(")")
     }
 
     def buildReadString(read: self.Read[_]): Unit =

@@ -118,6 +118,14 @@ trait OracleModule extends Jdbc { self =>
       builder.append(",")
       buildExpr(param7, builder)
       val _ = builder.append(")")
+    case Expr.FunctionCallN(params, function) =>
+      builder.append(function.name.name)
+      builder.append("(")
+      for { (p, i) <- params.zipWithIndex } {
+        if (i > 0) builder.append(",")
+        buildExpr(p, builder)
+      }
+      val _ = builder.append(")")
   }
 
   def buildReadString(read: self.Read[_], builder: StringBuilder): Unit =
